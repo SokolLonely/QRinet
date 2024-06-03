@@ -22,7 +22,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       initialRoute:  '/',
-      routes: {
+      routes:
+      {
         '/':(context) => MyHomePage(),
         '/recent':(context) => Recent(),
 
@@ -51,7 +52,15 @@ void initState() {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Text(_savedRecentList.toString()),
+        body:
+        SingleChildScrollView(
+          child: Row(mainAxisAlignment: MainAxisAlignment.center,
+              children:[Text('\n\n'+ _savedRecentList.toString()),
+              ]
+          )
+        )
+
+
     );
   }
 }
@@ -77,14 +86,16 @@ class _MyHomePageState extends State<MyHomePage> {
      _loadUsername();
 
   Timer.periodic(Duration(milliseconds: 900), _updateTimer);}
-  void _updateTimer(Timer timer) {
+  void _updateTimer(Timer timer)
+  {
     print(RawValues.join(""));
     setState(() {
       _short = sha256.convert(utf8.encode(RawValues.join(""))).toString().substring(0, 10);
       RawValues = RawValues;
       Output = Output;
 
-    });
+    }
+    );
 
   }
 
@@ -96,9 +107,10 @@ class _MyHomePageState extends State<MyHomePage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _savedUsername = prefs.getString('username') ?? '';
-    });
+    }
+    );
   }
-  _saveUsername(String username) async {
+  _saveUsername(String username) async {//это сохранение имени
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('username', username);
   }
@@ -175,7 +187,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
             ]
         ),
-      body: Column(children: [
+      body: SingleChildScrollView(
+    child:Column(children: [
       SizedBox(
         height: 400,
         child: MobileScanner(onDetect: (capture) {
@@ -202,9 +215,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
 }),
       ),
-        Text(_formatStopwatchTime() +'\n'+ _short ),
+        Text(_formatStopwatchTime() +'\n'+ _short ),//часы
 
-        FloatingActionButton(child: Text(ButtonText, ),
+        FloatingActionButton(child: Text(ButtonText, ),//кнопка старт-стоп
             backgroundColor: Colors.deepOrange,
             onPressed:
             (){
@@ -232,7 +245,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 }
             }
         ),
-        Text(Output),
+
+        Text(Output)//сплит
+        ,
         SizedBox(
           width: 70,
 
@@ -253,7 +268,7 @@ class _MyHomePageState extends State<MyHomePage> {
         //     updateOutput(Output);
         //   }
         // })
-      ])
+      ]))
     );
   }
 }
