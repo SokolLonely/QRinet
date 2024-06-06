@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert' show utf8;
+import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   runApp( MyApp());
@@ -56,6 +57,9 @@ void initState() {
         SingleChildScrollView(
           child: Row(mainAxisAlignment: MainAxisAlignment.center,
               children:[Text('\n\n'+ _savedRecentList.toString()),
+                // FloatingActionButton(child: Text('очистить'), onPressed: (){
+                //   _savedRecentList = [];
+                // })
               ]
           )
         )
@@ -74,6 +78,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Barcode> currentBarcodes = [];
+  AudioPlayer audioPlayer = AudioPlayer();
   List<String> RawValues = [];
   final stopwatch = Stopwatch();
   String _short = '';
@@ -101,7 +106,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //dynamic temp = ';
   String result = '';
+  void playLocal() async {
+    int result = await audioPlayer.play('assets/new_message_notice.mp3', isLocal: true);
 
+  }
   String _savedUsername = "set your name";
   _loadUsername() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -205,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
               currentBarcodes.add(barcodes[0]);
               RawValues.add(barcodes[0].rawValue.toString());
               updateOutput(RawValues);
-
+              playLocal();
               print('added');
             }
           print(currentBarcodes.length);
@@ -215,7 +223,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
 }),
       ),
-        Text(_formatStopwatchTime() +'\n'+ _short ),//часы
+        Text(_formatStopwatchTime() , style: TextStyle(
+          fontSize: 24.0, // Увеличение размера шрифта
+        ),),
+          Text( _short ),//часы
 
         FloatingActionButton(child: Text(ButtonText, ),//кнопка старт-стоп
             backgroundColor: Colors.deepOrange,
