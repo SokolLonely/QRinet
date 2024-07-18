@@ -1,6 +1,7 @@
 //import 'dart:ffi';
 
 import 'dart:async';
+import 'Mystopwatch.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:crypto/crypto.dart';
@@ -59,7 +60,8 @@ void initState() {
               children:[Text('\n\n'+ _savedRecentList.toString()),
                 // FloatingActionButton(child: Text('очистить'), onPressed: (){
                 //   _savedRecentList = [];
-                // })
+                //   //_saveList(_savedRecentList);
+                //  })
               ]
           )
         )
@@ -80,9 +82,10 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Barcode> currentBarcodes = [];
   AudioPlayer audioPlayer = AudioPlayer();
   List<String> RawValues = [];
-  final stopwatch = Stopwatch();
+  final stopwatch = Mystopwatch();
   String _short = '';
   bool isRunning= true;
+  //var startTime = DateTime.now();
   String ButtonText = "Stop";
   String Output = '';
   int i = 0;
@@ -107,7 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //dynamic temp = ';
   String result = '';
   void playLocal() async {
-    int result = await audioPlayer.play('assets/new_message_notice.mp3', isLocal: true);
+    await audioPlayer.play(UrlSource('assets/new_message_notice.mp3'));
 
   }
   String _savedUsername = "set your name";
@@ -128,12 +131,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   String _formatStopwatchTime() {
 
-    final milliseconds = stopwatch.elapsedMilliseconds;
-    final seconds = (milliseconds / 1000).truncate();
-    final minutes = (seconds / 60).truncate();
+    //final milliseconds = stopwatch.elapsedMilliseconds;
+    //final seconds = (milliseconds / 1000).truncate();
+    //final minutes = (seconds / 60).truncate();
+    //final seconds = -startTime.second + DateTime.now().second;
+    //final minutes = -startTime.minute + DateTime.now().minute;
 
-    String secondsStr = (seconds % 60).toString().padLeft(2, '0');
-    String minutesStr = minutes.toString().padLeft(2, '0');
+      final timeDifference = stopwatch.result();//DateTime.now().difference(startTime);
+      final seconds = timeDifference.inSeconds;
+      final minutes = (seconds / 60).truncate();
+      String secondsStr = (seconds % 60).toString().padLeft(2, '0');
+      String minutesStr = minutes.toString().padLeft(2, '0');
 
     return '$minutesStr:$secondsStr';
   }
@@ -196,18 +204,20 @@ class _MyHomePageState extends State<MyHomePage> {
             ]
         ),
       body: SingleChildScrollView(
-    child:Column(children: [
-      SizedBox(
-        height: 400,
-        child: MobileScanner(onDetect: (capture) {
-          final List<Barcode> barcodes = capture.barcodes; //получение кр-кода
-          print(barcodes[0].rawValue ?? "No Data found in QR");
-          if (  isRunning && !stopwatch.isRunning )//&& currentBarcodes.length > 0
-          {
-            stopwatch.start();
-            print('start');
-          }
-          if (isRunning && ( currentBarcodes.length == 0 ||  barcodes[0].rawValue != currentBarcodes.last.rawValue))
+    child:
+      Column(children: [
+        SizedBox(
+          height: 400,
+          child: MobileScanner(onDetect: (capture) {
+            final List<Barcode> barcodes = capture.barcodes; //получение кр-кода
+            print(barcodes[0].rawValue ?? "No Data found in QR");
+            if (  isRunning && !stopwatch.isRunning() )//&& currentBarcodes.length > 0 //first (start) qr
+                {
+              stopwatch.start();
+               //startTime = DateTime.now();
+              print('start');
+            }
+            if (isRunning && ( currentBarcodes.length == 0 ||  barcodes[0].rawValue != currentBarcodes.last.rawValue))
             {
 
               currentBarcodes.add(barcodes[0]);
@@ -216,24 +226,22 @@ class _MyHomePageState extends State<MyHomePage> {
               playLocal();
               print('added');
             }
-          print(currentBarcodes.length);
-          //криптография
-          //ona vyshe
+            print(currentBarcodes.length);
+            //криптография
+            //ona vyshe
 
 
-}),
-      ),
-        Text(_formatStopwatchTime() , style: TextStyle(
-          fontSize: 24.0, // Увеличение размера шрифта
-        ),),
-          Text( _short ),//часы
-
-        FloatingActionButton(child: Text(ButtonText, ),//кнопка старт-стоп
-            backgroundColor: Colors.deepOrange,
-            onPressed:
-            (){
-              isRunning = !isRunning;
-              if (stopwatch.isRunning)
+          }),
+        ),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+          Column(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [FloatingActionButton(child: Text(ButtonText, ),//кнопка старт-стоп
+              backgroundColor: Colors.deepOrange,
+              onPressed:
+                  (){
+                isRunning = !isRunning;
+                if (stopwatch.isRunning())
                 {
                   stopwatch.stop();
                   _changeText();
@@ -243,7 +251,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                   _saveList(_savedRecentList);
                 }
-              else
+                else
                 {
                   stopwatch.reset();
                   stopwatch.stop();
@@ -254,23 +262,32 @@ class _MyHomePageState extends State<MyHomePage> {
                   _changeText();
                   i = 0;//сброс всего
                 }
-            }
-        ),
+              }
+          ),Text('\n '),
+              SizedBox(
+            width: 70,
 
-        Text(Output)//сплит
-        ,
-        SizedBox(
-          width: 70,
+            child:
+            FloatingActionButton(
+                child: Text('recent\nactivities'),
+                backgroundColor: Colors.deepOrange,
+                onPressed: (){
+                  Navigator.pushNamed(context, '/recent');
+                }),
 
-          child:
-        FloatingActionButton(
-            child: Text('recent\nactivities'),
-            backgroundColor: Colors.deepOrange,
-            onPressed: (){
-          Navigator.pushNamed(context, '/recent');
-        }),
+          ),],  ),
+          Column(children: [Text(_formatStopwatchTime() , style: TextStyle(
+            fontSize: 24.0, // Увеличение размера шрифта
+          ),),
+            Text( _short ),//часы
 
-    ),
+
+
+            Text(Output)//сплит
+            ,],),
+        ],),
+
+
         // FloatingActionButton(child: Text('remove'), backgroundColor: Colors.deepOrange,onPressed: (){
         //   SetState(){
         //     currentBarcodes.removeLast();
@@ -279,7 +296,7 @@ class _MyHomePageState extends State<MyHomePage> {
         //     updateOutput(Output);
         //   }
         // })
-      ]))
+      ]),)
     );
   }
 }
